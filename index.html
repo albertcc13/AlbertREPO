@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Encuesta – Compra de ropa online</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #e8405a;
+      --accent-light: #ffeef1;
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #f8f7f4;
+      --text: #1a1a1a;
+      --text2: #6b6b6b;
+      --border: rgba(0,0,0,0.1);
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── HEADER ── */
+    .survey-header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
+      color: white;
+      padding: 3rem 2rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .survey-header::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(232,64,90,0.12);
+      pointer-events: none;
+    }
+    .survey-header::after {
+      content: '';
+      position: absolute;
+      bottom: -70px; left: -30px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+    .header-inner { max-width: 680px; margin: 0 auto; position: relative; }
+    .survey-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 400;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .survey-header p {
+      font-size: 14px;
+      opacity: 0.78;
+      line-height: 1.65;
+      max-width: 520px;
+    }
+    .progress-bar-wrap {
+      background: rgba(255,255,255,0.18);
+      height: 3px;
+      margin-top: 1.8rem;
+      border-radius: 2px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #e8405a;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .progress-label { font-size: 11px; opacity: 0.65; margin-top: 7px; }
+
+    /* ── BODY ── */
+    .survey-body {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 1.25rem 3rem;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--accent);
+      margin: 2.2rem 0 1rem;
+      padding-bottom: 7px;
+      border-bottom: 1.5px solid var(--accent-light);
+      letter-spacing: 0.01em;
+    }
+
+    .question {
+      margin-bottom: 1.25rem;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.3rem;
+      transition: border-color 0.15s;
+    }
+    .question.has-error { border-color: var(--accent); }
+
+    .question-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.55;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a2e;
+      color: white;
+      font-size: 10px;
+      font-weight: 500;
+      min-width: 20px; height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .option-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .opt-single, .opt-multi {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 13.5px;
+      color: var(--text);
+      background: var(--surface2);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .opt-single:hover, .opt-multi:hover { border-color: var(--accent); }
+    .opt-single.selected, .opt-multi.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: #b82040;
+      font-weight: 500;
+    }
+
+    .dot {
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      border: 1.5px solid #bbb;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .opt-single.selected .dot {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 3px white;
+    }
+
+    .chk {
+      width: 17px; height: 17px;
+      border-radius: 4px;
+      border: 1.5px solid #bbb;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: transparent;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+    .opt-multi.selected .chk {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* ── SCALE ── */
+    .scale-row { display: flex; gap: 6px; margin-top: 6px; }
+    .scale-btn {
+      flex: 1;
+      padding: 11px 4px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text2);
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .scale-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .scale-btn.selected { background: var(--accent); border-color: var(--accent); color: white; font-weight: 500; }
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 6px;
+      padding: 0 2px;
+    }
+
+    /* ── MATRIX ── */
+    .matrix-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .matrix-table { width: 100%; border-collapse: collapse; min-width: 340px; }
+    .matrix-table th {
+      font-size: 11px; font-weight: 400; color: var(--text2);
+      text-align: center; padding: 4px 2px 10px;
+    }
+    .matrix-table th:first-child { text-align: left; width: 36%; }
+    .matrix-table td {
+      font-size: 13px; padding: 7px 2px;
+      border-top: 0.5px solid var(--border);
+      text-align: center;
+    }
+    .matrix-table td:first-child { text-align: left; padding-left: 2px; font-size: 13px; color: var(--text); }
+    .matrix-dot {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid #bbb;
+      margin: 0 auto;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .matrix-dot:hover { border-color: var(--accent); }
+    .matrix-dot.selected { background: var(--accent); border-color: var(--accent); }
+    .matrix-dot.selected::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: white; }
+
+    /* ── ERRORS ── */
+    .error-msg { font-size: 12px; color: var(--accent); margin-top: 7px; display: none; }
+    .question.has-error .error-msg { display: block; }
+
+    /* ── SUBMIT ── */
+    .submit-wrap { padding-top: 0.5rem; }
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.02em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── THANKS ── */
+    .thanks-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--bg);
+    }
+    .thanks-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.6rem;
+    }
+    .thanks-circle svg { width: 36px; height: 36px; }
+    .thanks-wrap h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .thanks-wrap p {
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.7;
+      max-width: 380px;
+    }
+
+    /* ── ADMIN ── */
+    .admin-header {
+      background: #1a1a2e;
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .admin-header h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
+    .admin-header span { font-size: 12px; opacity: 0.6; display: block; margin-top: 2px; }
+    .admin-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .icon-btn {
+      background: rgba(255,255,255,0.1); color: white;
+      border: 0.5px solid rgba(255,255,255,0.25);
+      border-radius: 8px; padding: 7px 14px;
+      font-size: 13px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.2); }
+    .admin-body { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+    .stat-card { background: white; border-radius: 10px; padding: 1rem 1.1rem; text-align: center; border: 0.5px solid var(--border); }
+    .stat-card .val { font-size: 30px; font-weight: 500; color: var(--accent); line-height: 1; }
+    .stat-card .lbl { font-size: 11px; color: var(--text2); margin-top: 5px; }
+    .results-section { margin-bottom: 1.25rem; background: white; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .results-section h3 { font-size: 13px; font-weight: 500; color: var(--text); padding: 10px 14px; background: var(--surface2); border-bottom: 0.5px solid var(--border); }
+    .result-row { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+    .result-row:last-child { border-bottom: none; }
+    .result-label { flex: 1; color: var(--text2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
+    .result-bar-wrap { flex: 2; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+    .result-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s ease; }
+    .result-count { min-width: 52px; text-align: right; font-weight: 500; color: var(--text); font-size: 12px; white-space: nowrap; }
+    .danger-btn { background: transparent; color: var(--accent); border: 0.5px solid var(--accent); border-radius: 8px; padding: 7px 14px; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .danger-btn:hover { background: var(--accent-light); }
+    .no-data { text-align: center; padding: 2.5rem; font-size: 14px; color: var(--text2); }
+
+    /* ── PIN OVERLAY ── */
+    .pin-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+      padding: 1rem;
+    }
+    .pin-box {
+      background: white; border-radius: var(--radius);
+      padding: 2rem 1.75rem; width: 100%; max-width: 320px;
+      text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+    .pin-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+    .pin-box p { font-size: 13px; color: var(--text2); margin-bottom: 1.2rem; }
+    .pin-input {
+      width: 100%; padding: 12px 14px;
+      border: 0.5px solid var(--border); border-radius: 8px;
+      font-size: 20px; text-align: center; letter-spacing: 0.25em;
+      font-family: 'DM Sans', sans-serif; color: var(--text); outline: none;
+    }
+    .pin-input:focus { border-color: var(--accent); }
+    .pin-error { font-size: 12px; color: var(--accent); margin-top: 7px; min-height: 18px; }
+    .pin-actions { display: flex; gap: 8px; margin-top: 1rem; }
+    .pin-cancel {
+      flex: 1; padding: 10px; background: transparent;
+      border: 0.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--text2);
+    }
+    .pin-confirm {
+      flex: 1; padding: 10px; background: var(--accent); border: none;
+      border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; color: white;
+    }
+
+    /* ── FOOTER ── */
+    .survey-footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 12px;
+      color: var(--text2);
+      opacity: 0.6;
+    }
+
+    @media (max-width: 480px) {
+      .survey-header { padding: 2rem 1.25rem 2rem; }
+      .scale-btn { font-size: 13px; padding: 9px 2px; }
+      .matrix-table th, .matrix-table td { font-size: 12px; }
+      .admin-header { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ SURVEY VIEW ══ -->
+  <div id="surveyView" class="view active">
+    <div class="survey-header">
+      <div class="header-inner">
+        <h1>Compra de ropa online</h1>
+        <p>Estamos realizando un estudio sobre la experiencia de compra de ropa online. Esta encuesta es anónima y solo te llevará 2 minutos. ¡Gracias por tu colaboración!</p>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="progressLabel">0 de 14 preguntas respondidas</div>
+      </div>
+    </div>
+
+    <div class="survey-body">
+
+      <div class="section-title">Perfil básico</div>
+
+      <div class="question" id="q0">
+        <div class="question-label"><span class="num">0</span><span>¿Cuál es tu género?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="0" data-val="Hombre"><div class="dot"></div>Hombre</div>
+          <div class="opt-single" data-q="0" data-val="Mujer"><div class="dot"></div>Mujer</div>
+          <div class="opt-single" data-q="0" data-val="Prefiero no contestar"><div class="dot"></div>Prefiero no contestar</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="question" id="q1">
+        <div class="question-label"><span class="num">1</span><span>¿Qué edad tienes?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="1" data-val="Menos de 18"><div class="dot"></div>Menos de 18</div>
+          <div class="opt-single" data-q="1" data-val="18–24"><div class="dot"></div>18–24</div>
+          <div class="opt-single" data-q="1" data-val="25–34"><div class="dot"></div>25–34</div>
+          <div class="opt-single" data-q="1" data-val="35–44"><div class="dot"></div>35–44</div>
+          <div class="opt-single" data-q="1" data-val="45+"><div class="dot"></div>45+</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="question" id="q2">
+        <div class="question-label"><span class="num">2</span><span>¿Con qué frecuencia compras ropa o complementos online?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="2" data-val="Varias veces al mes"><div class="dot"></div>Varias veces al mes</div>
+          <div class="opt-single" data-q="2" data-val="Una vez al mes"><div class="dot"></div>Una vez al mes</div>
+          <div class="opt-single" data-q="2" data-val="Cada 2–3 meses"><div class="dot"></div>Cada 2–3 meses</div>
+          <div class="opt-single" data-q="2" data-val="1–2 veces al año"><div class="dot"></div>1–2 veces al año</div>
+          <div class="opt-single" data-q="2" data-val="Nunca"><div class="dot"></div>Nunca</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="section-title">Experiencia comprando ropa online</div>
+
+      <div class="question" id="q3">
+        <div class="question-label"><span class="num">3</span><span>¿En qué plataformas sueles comprar ropa online? <em style="font-weight:300;font-size:12px">(puedes seleccionar varias)</em></span></div>
+        <div class="option-list">
+          <div class="opt-multi" data-q="3" data-val="Zara / Inditex"><div class="chk">✓</div>Zara / Inditex</div>
+          <div class="opt-multi" data-q="3" data-val="Amazon"><div class="chk">✓</div>Amazon</div>
+          <div class="opt-multi" data-q="3" data-val="Shein"><div class="chk">✓</div>Shein</div>
+          <div class="opt-multi" data-q="3" data-val="Zalando"><div class="chk">✓</div>Zalando</div>
+          <div class="opt-multi" data-q="3" data-val="ASOS"><div class="chk">✓</div>ASOS</div>
+          <div class="opt-multi" data-q="3" data-val="Otras"><div class="chk">✓</div>Otras</div>
+        </div>
+        <div class="error-msg">Por favor selecciona al menos una opción</div>
+      </div>
+
+      <div class="question" id="q4">
+        <div class="question-label"><span class="num">4</span><span>¿Cuánto gastas normalmente en una compra online de ropa?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="4" data-val="Menos de 30€"><div class="dot"></div>Menos de 30€</div>
+          <div class="opt-single" data-q="4" data-val="30–60€"><div class="dot"></div>30–60€</div>
+          <div class="opt-single" data-q="4" data-val="60–100€"><div class="dot"></div>60–100€</div>
+          <div class="opt-single" data-q="4" data-val="100–200€"><div class="dot"></div>100–200€</div>
+          <div class="opt-single" data-q="4" data-val="Más de 200€"><div class="dot"></div>Más de 200€</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="section-title">Problema – incertidumbre sobre cómo quedará la ropa</div>
+
+      <div class="question" id="q5">
+        <div class="question-label"><span class="num">5</span><span>¿Con qué frecuencia la ropa que compras online no te queda como esperabas?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="5" data-val="Nunca"><div class="dot"></div>Nunca</div>
+          <div class="opt-single" data-q="5" data-val="Rara vez"><div class="dot"></div>Rara vez</div>
+          <div class="opt-single" data-q="5" data-val="A veces"><div class="dot"></div>A veces</div>
+          <div class="opt-single" data-q="5" data-val="Frecuentemente"><div class="dot"></div>Frecuentemente</div>
+          <div class="opt-single" data-q="5" data-val="Muy frecuentemente"><div class="dot"></div>Muy frecuentemente</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="question" id="q6">
+        <div class="question-label"><span class="num">6</span><span>Cuando compras ropa online, ¿cuánta incertidumbre sientes sobre cómo te quedará?</span></div>
+        <div class="scale-row">
+          <button class="scale-btn" data-q="6" data-val="1">1</button>
+          <button class="scale-btn" data-q="6" data-val="2">2</button>
+          <button class="scale-btn" data-q="6" data-val="3">3</button>
+          <button class="scale-btn" data-q="6" data-val="4">4</button>
+          <button class="scale-btn" data-q="6" data-val="5">5</button>
+        </div>
+        <div class="scale-labels"><span>Ninguna</span><span>Poca</span><span>Moderada</span><span>Bastante</span><span>Mucha</span></div>
+        <div class="error-msg">Por favor selecciona un valor</div>
+      </div>
+
+      <div class="question" id="q7">
+        <div class="question-label"><span class="num">7</span><span>¿Qué sueles hacer cuando la ropa no te queda bien?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="7" data-val="La devuelvo"><div class="dot"></div>La devuelvo</div>
+          <div class="opt-single" data-q="7" data-val="Me la quedo aunque no me convenza"><div class="dot"></div>Me la quedo aunque no me convenza</div>
+          <div class="opt-single" data-q="7" data-val="La regalo o vendo"><div class="dot"></div>La regalo o vendo</div>
+          <div class="opt-single" data-q="7" data-val="No compro ropa online por ese motivo"><div class="dot"></div>No compro ropa online por ese motivo</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="section-title">Soluciones actuales</div>
+
+      <div class="question" id="q8">
+        <div class="question-label"><span class="num">8</span><span>Antes de comprar ropa online, ¿qué utilizas para decidir la talla o cómo te quedará? <em style="font-weight:300;font-size:12px">(puedes elegir varias)</em></span></div>
+        <div class="option-list">
+          <div class="opt-multi" data-q="8" data-val="Guía de tallas"><div class="chk">✓</div>Guía de tallas</div>
+          <div class="opt-multi" data-q="8" data-val="Fotos del producto"><div class="chk">✓</div>Fotos del producto</div>
+          <div class="opt-multi" data-q="8" data-val="Reseñas de otros compradores"><div class="chk">✓</div>Reseñas de otros compradores</div>
+          <div class="opt-multi" data-q="8" data-val="Fotos de clientes"><div class="chk">✓</div>Fotos de clientes</div>
+          <div class="opt-multi" data-q="8" data-val="Comparo con ropa que ya tengo"><div class="chk">✓</div>Comparo con ropa que ya tengo</div>
+          <div class="opt-multi" data-q="8" data-val="No utilizo nada en especial"><div class="chk">✓</div>No utilizo nada en especial</div>
+        </div>
+        <div class="error-msg">Por favor selecciona al menos una opción</div>
+      </div>
+
+      <div class="question" id="q9">
+        <div class="question-label"><span class="num">9</span><span>¿Qué tan útiles te resultan estas herramientas actuales?</span></div>
+        <div class="scale-row">
+          <button class="scale-btn" data-q="9" data-val="1">1</button>
+          <button class="scale-btn" data-q="9" data-val="2">2</button>
+          <button class="scale-btn" data-q="9" data-val="3">3</button>
+          <button class="scale-btn" data-q="9" data-val="4">4</button>
+          <button class="scale-btn" data-q="9" data-val="5">5</button>
+        </div>
+        <div class="scale-labels"><span>Nada útiles</span><span>Poco útiles</span><span>Normales</span><span>Bastante</span><span>Muy útiles</span></div>
+        <div class="error-msg">Por favor selecciona un valor</div>
+      </div>
+
+      <div class="section-title">Importancia de factores al comprar ropa online</div>
+
+      <div class="question" id="q10">
+        <div class="question-label"><span class="num">10</span><span>¿Qué importancia tienen para ti estos factores? <em style="font-weight:300;font-size:12px">Escala 1 (Nada importante) – 5 (Muy importante)</em></span></div>
+        <div class="matrix-wrap">
+          <table class="matrix-table">
+            <thead>
+              <tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Precio</td>
+                <td><div class="matrix-dot" data-row="Precio" data-val="1"></div></td>
+                <td><div class="matrix-dot" data-row="Precio" data-val="2"></div></td>
+                <td><div class="matrix-dot" data-row="Precio" data-val="3"></div></td>
+                <td><div class="matrix-dot" data-row="Precio" data-val="4"></div></td>
+                <td><div class="matrix-dot" data-row="Precio" data-val="5"></div></td>
+              </tr>
+              <tr>
+                <td>Que la talla sea correcta</td>
+                <td><div class="matrix-dot" data-row="Talla correcta" data-val="1"></div></td>
+                <td><div class="matrix-dot" data-row="Talla correcta" data-val="2"></div></td>
+                <td><div class="matrix-dot" data-row="Talla correcta" data-val="3"></div></td>
+                <td><div class="matrix-dot" data-row="Talla correcta" data-val="4"></div></td>
+                <td><div class="matrix-dot" data-row="Talla correcta" data-val="5"></div></td>
+              </tr>
+              <tr>
+                <td>Fotos del producto</td>
+                <td><div class="matrix-dot" data-row="Fotos del producto" data-val="1"></div></td>
+                <td><div class="matrix-dot" data-row="Fotos del producto" data-val="2"></div></td>
+                <td><div class="matrix-dot" data-row="Fotos del producto" data-val="3"></div></td>
+                <td><div class="matrix-dot" data-row="Fotos del producto" data-val="4"></div></td>
+                <td><div class="matrix-dot" data-row="Fotos del producto" data-val="5"></div></td>
+              </tr>
+              <tr>
+                <td>Política de devoluciones</td>
+                <td><div class="matrix-dot" data-row="Devoluciones" data-val="1"></div></td>
+                <td><div class="matrix-dot" data-row="Devoluciones" data-val="2"></div></td>
+                <td><div class="matrix-dot" data-row="Devoluciones" data-val="3"></div></td>
+                <td><div class="matrix-dot" data-row="Devoluciones" data-val="4"></div></td>
+                <td><div class="matrix-dot" data-row="Devoluciones" data-val="5"></div></td>
+              </tr>
+              <tr>
+                <td>Ver cómo queda la prenda</td>
+                <td><div class="matrix-dot" data-row="Ver la prenda" data-val="1"></div></td>
+                <td><div class="matrix-dot" data-row="Ver la prenda" data-val="2"></div></td>
+                <td><div class="matrix-dot" data-row="Ver la prenda" data-val="3"></div></td>
+                <td><div class="matrix-dot" data-row="Ver la prenda" data-val="4"></div></td>
+                <td><div class="matrix-dot" data-row="Ver la prenda" data-val="5"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="error-msg">Por favor valora todos los factores</div>
+      </div>
+
+      <div class="section-title">Validación de la solución</div>
+
+      <div class="question" id="q11">
+        <div class="question-label"><span class="num">11</span><span>Imagina una app que crea tu avatar 3D y te permite probarte virtualmente la ropa antes de comprarla. ¿Cuán útil te parecería?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="11" data-val="Nada útil"><div class="dot"></div>Nada útil</div>
+          <div class="opt-single" data-q="11" data-val="Poco útil"><div class="dot"></div>Poco útil</div>
+          <div class="opt-single" data-q="11" data-val="Algo útil"><div class="dot"></div>Algo útil</div>
+          <div class="opt-single" data-q="11" data-val="Bastante útil"><div class="dot"></div>Bastante útil</div>
+          <div class="opt-single" data-q="11" data-val="Muy útil"><div class="dot"></div>Muy útil</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="question" id="q12">
+        <div class="question-label"><span class="num">12</span><span>¿La usarías si estuviera integrada en tus tiendas online habituales?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="12" data-val="Seguro que sí"><div class="dot"></div>Seguro que sí</div>
+          <div class="opt-single" data-q="12" data-val="Probablemente sí"><div class="dot"></div>Probablemente sí</div>
+          <div class="opt-single" data-q="12" data-val="No estoy seguro"><div class="dot"></div>No estoy seguro</div>
+          <div class="opt-single" data-q="12" data-val="Probablemente no"><div class="dot"></div>Probablemente no</div>
+          <div class="opt-single" data-q="12" data-val="Seguro que no"><div class="dot"></div>Seguro que no</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="section-title">Disposición a pagar</div>
+
+      <div class="question" id="q13">
+        <div class="question-label"><span class="num">13</span><span>¿Cuánto estarías dispuesto a pagar por una herramienta que reduzca el riesgo de comprar ropa que no te quede bien?</span></div>
+        <div class="option-list">
+          <div class="opt-single" data-q="13" data-val="No pagaría"><div class="dot"></div>No pagaría</div>
+          <div class="opt-single" data-q="13" data-val="Menos de 2€ al mes"><div class="dot"></div>Menos de 2€ al mes</div>
+          <div class="opt-single" data-q="13" data-val="2–5€ al mes"><div class="dot"></div>2–5€ al mes</div>
+          <div class="opt-single" data-q="13" data-val="5–10€ al mes"><div class="dot"></div>5–10€ al mes</div>
+          <div class="opt-single" data-q="13" data-val="Solo si es gratis"><div class="dot"></div>Solo si es gratis</div>
+        </div>
+        <div class="error-msg">Por favor selecciona una opción</div>
+      </div>
+
+      <div class="submit-wrap">
+        <button class="submit-btn" id="submitBtn">Enviar respuestas</button>
+      </div>
+    </div>
+
+    <div class="survey-footer">Encuesta anónima · Los datos se usan exclusivamente para investigación</div>
+  </div>
+
+  <!-- ══ THANKS VIEW ══ -->
+  <div id="thanksView" class="view">
+    <div class="thanks-wrap">
+      <div class="thanks-circle">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="17" stroke="#e8405a" stroke-width="1.5"/>
+          <path d="M10 18.5l5.5 5.5 10.5-11" stroke="#e8405a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>¡Muchas gracias!</h2>
+      <p>Tu respuesta ha sido registrada con éxito. Tu participación es muy valiosa para mejorar la experiencia de compra de ropa online.</p>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN VIEW ══ -->
+  <div id="adminView" class="view">
+    <div class="admin-header">
+      <div>
+        <h2>Panel de resultados</h2>
+        <span id="adminSubtitle">–</span>
+      </div>
+      <div class="admin-btns">
+        <button class="icon-btn" id="exportCsvBtn">Exportar CSV</button>
+        <button class="icon-btn" id="backToSurvey">← Salir</button>
+      </div>
+    </div>
+    <div class="admin-body" id="adminBody">
+      <div class="no-data">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- ══ PIN OVERLAY ══ -->
+  <div id="pinOverlay" class="pin-overlay" style="display:none">
+    <div class="pin-box">
+      <h3>Acceso restringido</h3>
+      <p>Introduce el PIN de administrador</p>
+      <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="······" autocomplete="off"/>
+      <div class="pin-error" id="pinError"></div>
+      <div class="pin-actions">
+        <button class="pin-cancel" id="pinCancel">Cancelar</button>
+        <button class="pin-confirm" id="pinConfirm">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── CONFIG ── Cambia estos valores si es necesario
+    var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxRJdiqA3564ddphBvUbFpY8t6GIIYTvY-nXLu3mcfS36k-ebVNUr3PsNlE5PCeWpDtDQ/exec';
+    var ADMIN_PIN  = '1234'; // Cambia este PIN por el tuyo
+
+    // ── STATE ──
+    var answers      = {};
+    var matrixAnswers = {};
+    var MATRIX_ROWS  = ['Precio','Talla correcta','Fotos del producto','Devoluciones','Ver la prenda'];
+
+    // ── VIEWS ──
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ── PROGRESS ──
+    function updateProgress() {
+      var filled = 0;
+      [0,1,2,4,5,7,11,12,13].forEach(function(q){ if (answers[q]) filled++; });
+      [3,8].forEach(function(q){ if (answers[q] && answers[q].length > 0) filled++; });
+      [6,9].forEach(function(q){ if (answers[q]) filled++; });
+      if (Object.keys(matrixAnswers).length === MATRIX_ROWS.length) filled++;
+      var pct = Math.round((filled / 14) * 100);
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = filled + ' de 14 preguntas respondidas';
+    }
+
+    // ── SINGLE SELECT ──
+    document.querySelectorAll('.opt-single').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var q = this.dataset.q;
+        document.querySelectorAll('.opt-single[data-q="' + q + '"]').forEach(function(o){ o.classList.remove('selected'); });
+        this.classList.add('selected');
+        answers[parseInt(q)] = this.dataset.val;
+        document.getElementById('q' + q).classList.remove('has-error');
+        updateProgress();
+      });
+    });
+
+    // ── MULTI SELECT ──
+    document.querySelectorAll('.opt-multi').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var q = parseInt(this.dataset.q);
+        this.classList.toggle('selected');
+        answers[q] = Array.from(document.querySelectorAll('.opt-multi[data-q="' + q + '"].selected')).map(function(o){ return o.dataset.val; });
+        document.getElementById('q' + q).classList.remove('has-error');
+        updateProgress();
+      });
+    });
+
+    // ── SCALE ──
+    document.querySelectorAll('.scale-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var q = this.dataset.q;
+        document.querySelectorAll('.scale-btn[data-q="' + q + '"]').forEach(function(b){ b.classList.remove('selected'); });
+        this.classList.add('selected');
+        answers[parseInt(q)] = parseInt(this.dataset.val);
+        document.getElementById('q' + q).classList.remove('has-error');
+        updateProgress();
+      });
+    });
+
+    // ── MATRIX ──
+    document.querySelectorAll('.matrix-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var row = this.dataset.row;
+        document.querySelectorAll('.matrix-dot[data-row="' + row + '"]').forEach(function(d){ d.classList.remove('selected'); });
+        this.classList.add('selected');
+        matrixAnswers[row] = parseInt(this.dataset.val);
+        if (Object.keys(matrixAnswers).length === MATRIX_ROWS.length) {
+          document.getElementById('q10').classList.remove('has-error');
+        }
+        updateProgress();
+      });
+    });
+
+    // ── VALIDATE ──
+    function validate() {
+      var valid = true;
+      [0,1,2,4,5,7,11,12,13].forEach(function(q){
+        if (!answers[q]) { document.getElementById('q'+q).classList.add('has-error'); valid = false; }
+      });
+      [3,8].forEach(function(q){
+        if (!answers[q] || !answers[q].length) { document.getElementById('q'+q).classList.add('has-error'); valid = false; }
+      });
+      [6,9].forEach(function(q){
+        if (!answers[q]) { document.getElementById('q'+q).classList.add('has-error'); valid = false; }
+      });
+      if (Object.keys(matrixAnswers).length < MATRIX_ROWS.length) {
+        document.getElementById('q10').classList.add('has-error'); valid = false;
+      }
+      return valid;
+    }
+
+    // ── SAVE & SEND ──
+    async function saveResponse() {
+      var payload = {
+        timestamp:            new Date().toISOString(),
+        genero:               answers[0]  || '',
+        edad:                 answers[1]  || '',
+        frecuencia:           answers[2]  || '',
+        plataformas:          (answers[3] || []).join('; '),
+        gasto:                answers[4]  || '',
+        frecuencia_mal:       answers[5]  || '',
+        incertidumbre:        answers[6]  || '',
+        cuando_no_queda:      answers[7]  || '',
+        herramientas:         (answers[8] || []).join('; '),
+        utilidad_herramientas: answers[9] || '',
+        factor_precio:        matrixAnswers['Precio']           || '',
+        factor_talla:         matrixAnswers['Talla correcta']   || '',
+        factor_fotos:         matrixAnswers['Fotos del producto']|| '',
+        factor_devoluciones:  matrixAnswers['Devoluciones']     || '',
+        factor_ver_prenda:    matrixAnswers['Ver la prenda']    || '',
+        app_utilidad:         answers[11] || '',
+        app_usaria:           answers[12] || '',
+        disposicion_pagar:    answers[13] || ''
+      };
+
+      // Envía a Google Sheets
+      try {
+        await fetch(SHEETS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {
+        console.warn('Error enviando a Sheets:', e);
+      }
+    }
+
+    // ── SUBMIT ──
+    document.getElementById('submitBtn').addEventListener('click', async function() {
+      if (!validate()) {
+        var fe = document.querySelector('.question.has-error');
+        if (fe) fe.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      this.textContent = 'Enviando...';
+      this.disabled = true;
+      await saveResponse();
+      showView('thanksView');
+    });
+
+    // ── ADMIN SECRET ACCESS: escribe "admin" en el teclado ──
+    var adminKeySeq = [];
+    document.addEventListener('keydown', function(e) {
+      adminKeySeq.push(e.key);
+      if (adminKeySeq.length > 5) adminKeySeq.shift();
+      if (adminKeySeq.join('') === 'admin') showPinOverlay();
+    });
+
+    function showPinOverlay() {
+      document.getElementById('pinOverlay').style.display = 'flex';
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      setTimeout(function(){ document.getElementById('pinInput').focus(); }, 50);
+    }
+
+    document.getElementById('pinCancel').addEventListener('click', function() {
+      document.getElementById('pinOverlay').style.display = 'none';
+    });
+
+    document.getElementById('pinConfirm').addEventListener('click', function() {
+      if (document.getElementById('pinInput').value === ADMIN_PIN) {
+        document.getElementById('pinOverlay').style.display = 'none';
+        loadAdmin();
+      } else {
+        document.getElementById('pinError').textContent = 'PIN incorrecto. Inténtalo de nuevo.';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    });
+
+    document.getElementById('pinInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('pinConfirm').click();
+    });
+
+    document.getElementById('backToSurvey').addEventListener('click', function() {
+      showView('surveyView');
+    });
+
+    // ── ADMIN RENDER ──
+    async function loadAdmin() {
+      showView('adminView');
+      // En la web standalone no hay localStorage de Claude, mostramos aviso
+      document.getElementById('adminSubtitle').textContent = 'Los datos están en tu Google Sheet';
+      document.getElementById('adminBody').innerHTML = '<div class="no-data" style="padding:2rem;line-height:1.7">El panel de estadísticas funciona en la versión Claude.<br><br>Para ver los resultados, abre tu <strong>Google Sheet</strong> directamente.<br><br><a href="https://sheets.google.com" target="_blank" style="color:#e8405a">Ir a Google Sheets →</a></div>';
+    }
+
+    document.getElementById('exportCsvBtn').onclick = function() {
+      window.open('https://sheets.google.com', '_blank');
+    };
+
+    // ── INIT ──
+    updateProgress();
+  </script>
+</body>
+</html>
